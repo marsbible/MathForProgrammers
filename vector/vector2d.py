@@ -9,11 +9,14 @@ class vector2d():
         self.y = y
 
     def length(self):
-        return sqrt(self.x**2, self.y**2)
+        return sqrt(self.x**2 + self.y**2)
 
     def to_polar(self):
         angle = atan2(self.y, self.x)
         return (self.length(self), angle)
+
+    def to_tuple(self):
+        return (self.x, self.y)
 
     def add(self, v):
         return vector2d(self.x + v.x, self.y + v.y)
@@ -31,7 +34,10 @@ class vector2d():
         polar = self.to_polar()
         self.from_polar((polar[0], polar[1] + angle))
 
-    # class method
+    # class method, convenience using
+    def translate(t, vectors):
+        return [v.add(t) for v in vectors]
+
     def sum(vectors):
         return vector2d(sum([v.x for v in vectors]), sum([v.y for v in vectors]))
 

@@ -3,6 +3,7 @@ from math import sqrt, pi, ceil, floor
 import matplotlib
 import matplotlib.patches
 from matplotlib.collections import PatchCollection
+from vector.vector2d import vector2d
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -32,7 +33,7 @@ class Points():
 
 
 class Arrow():
-    def __init__(self, tip, tail=(0, 0), color=red):
+    def __init__(self, tip, tail=vector2d(0, 0), color=red):
         self.tip = tip
         self.tail = tail
         self.color = color
@@ -50,16 +51,16 @@ def extract_vectors(objects):
     for object in objects:
         if type(object) == Polygon:
             for v in object.vertices:
-                yield v
+                yield v.to_tuple()
         elif type(object) == Points:
             for v in object.vectors:
-                yield v
+                yield v.to_tuple()
         elif type(object) == Arrow:
-            yield object.tip
-            yield object.tail
+            yield object.tip.to_tuple()
+            yield object.tail.to_tuple()
         elif type(object) == Segment:
-            yield object.start_point
-            yield object.end_point
+            yield object.start_point.to_tuple()
+            yield object.end_point.to_tuple()
         else:
             raise TypeError("Unrecognized object: {}".format(object))
 
@@ -101,26 +102,26 @@ def draw(*objects, origin=True, axes=True, grid=(1, 1), nice_aspect_ratio=True, 
     for object in objects:
         if type(object) == Polygon:
             for i in range(0, len(object.vertices)):
-                x1, y1 = object.vertices[i]
-                x2, y2 = object.vertices[(i + 1) % len(object.vertices)]
-                plt.plot([x1, x2], [y1, y2], color=object.color)
+                o1 = object.vertices[i]
+                o2 = object.vertices[(i + 1) % len(object.vertices)]
+                plt.plot([o1.x, o2.x], [o1.y, o2.y], color=object.color)
             if object.fill:
-                xs = [v[0] for v in object.vertices]
-                ys = [v[1] for v in object.vertices]
+                xs = [v.x for v in object.vertices]
+                ys = [v.y for v in object.vertices]
                 plt.gca().fill(xs, ys, object.fill, alpha=object.alpha)
         elif type(object) == Points:
-            xs = [v[0] for v in object.vectors]
-            ys = [v[1] for v in object.vectors]
+            xs = [v.x for v in object.vectors]
+            ys = [v.y for v in object.vectors]
             plt.scatter(xs, ys, color=object.color)
         elif type(object) == Arrow:
             tip, tail = object.tip, object.tail
             tip_length = (xlim()[1] - xlim()[0]) / 20.
-            length = sqrt((tip[1] - tail[1])**2 + (tip[0] - tail[0])**2)
+            length = tip.distance(tail)
             new_length = length - tip_length
-            new_y = (tip[1] - tail[1]) * (new_length / length)
-            new_x = (tip[0] - tail[0]) * (new_length / length)
-            plt.gca().arrow(tail[0],
-                            tail[1],
+            new_y = (tip.y - tail.y) * (new_length / length)
+            new_x = (tip.x - tail.x) * (new_length / length)
+            plt.gca().arrow(tail.x,
+                            tail.y,
                             new_x,
                             new_y,
                             head_width=tip_length / 1.5,
@@ -128,9 +129,9 @@ def draw(*objects, origin=True, axes=True, grid=(1, 1), nice_aspect_ratio=True, 
                             fc=object.color,
                             ec=object.color)
         elif type(object) == Segment:
-            x1, y1 = object.start_point
-            x2, y2 = object.end_point
-            plt.plot([x1, x2], [y1, y2], color=object.color)
+            o1 = object.start_point
+            o2 = object.end_point
+            plt.plot([o1.x, o2.x], [o1.y, o2.y], color=object.color)
         else:
             raise TypeError("Unrecognized object: {}".format(object))
 
